@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sharhga javob yozish | My-Bozor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{% url 'home' %}">MY-BOZOR</a>
+            <a href="{% url 'details' comment.product.pk %}" class="btn btn-outline-light btn-sm">Mahsulotga qaytish</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-header bg-white py-3 fw-bold">
+                        <i class="bi bi-reply-all"></i> Sharhga javob berish
+                    </div>
+
+                    <div class="card-body">
+                        <div class="p-3 bg-light rounded-3 mb-4 border-start border-primary border-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <strong class="text-primary">{{ comment.user.username }}</strong>
+                                <small class="text-muted">{{ comment.created_at|date:"d.m.Y H:i" }}</small>
+                            </div>
+                            <p class="mb-0 text-secondary italic">"{{ comment.desc }}"</p>
+                        </div>
+
+                        <hr>
+
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="reply_text" class="form-label fw-bold">Sizning javobingiz:</label>
+                                <textarea name="reply_text" id="reply_text" class="form-control" rows="4"
+                                          placeholder="Javob matnini shu yerga yozing..." required></textarea>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="{% url 'details' comment.product.pk %}" class="btn btn-outline-secondary px-4">Bekor qilish</a>
+                                <button type="submit" class="btn btn-primary px-5 shadow-sm">
+                                    <i class="bi bi-send"></i> Javobni yuborish
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <p class="small text-muted">Diqqat: O'z sharhingizga javob yoza olmaysiz.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

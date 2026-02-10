@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Savat | My-Bozor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{% url 'home' %}">MY-BOZOR</a>
+            <a href="{% url 'home' %}" class="btn btn-outline-light btn-sm">Xaridni davom ettirish</a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-lg-8 mb-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-cart3"></i> Sizning savatingiz</h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Mahsulot</th>
+                                    <th>Narxi</th>
+                                    <th class="text-center">Soni</th>
+                                    <th>Jami</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in cart.items.all %}
+                                <tr>
+                                    <td class="ps-3">
+                                        <div class="d-flex align-items-center">
+                                            {% if item.product.main_image %}
+                                                <img src="{{ item.product.main_image.url }}" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                            {% endif %}
+                                            <h6 class="mb-0 text-truncate" style="max-width: 150px;">{{ item.product.title }}</h6>
+                                        </div>
+                                    </td>
+                                    <td>{{ item.product.price }} so'm</td>
+                                    <td>
+                                        <div class="d-flex justify-content-center align-items-center gap-2">
+                                            <form action="{% url 'cartremove' item.product.id %}" method="POST">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary">-</button>
+                                            </form>
+
+                                            <span class="fw-bold px-2">{{ item.quantity }}</span>
+
+                                            <form action="{% url 'addcart' item.product.id %}" method="POST">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary">+</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                    <td class="fw-bold text-primary">
+                                        {{ item.quantity }} x {{ item.product.price }}
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <form action="{% url 'cartdelete' item.product.id %}" method="POST">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('O\'chirishga ishonchingiz komilmi?')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-5 text-muted">
+                                        <i class="bi bi-cart-x fs-1"></i>
+                                        <p class="mt-2">Savatda hech narsa yo'q</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {% if cart.items.all %}
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold mb-4">Buyurtma xulosasi</h5>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Jami mahsulotlar:</span>
+                            <span class="fw-bold">{{ cart.items.count }} ta</span>
+                        </div>
+                        <hr>
+                        <a href="{% url 'chekout' %}" class="btn btn-success btn-lg w-100">
+                            Rasmiylashtirish
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

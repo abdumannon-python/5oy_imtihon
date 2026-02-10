@@ -1,5 +1,9 @@
 from django.db import models
 
+from User.models import Users
+from product.models import Products
+
+
 class Order(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Kutilmoqda'),
@@ -9,7 +13,7 @@ class Order(models.Model):
         ('cancelled', 'Bekor qilindi'),
     ]
 
-    user=models.ForeignKey('User.Users',on_delete=models.CASCADE,related_name='orders')
+    user=models.ForeignKey(Users,on_delete=models.CASCADE,related_name='orders')
 
 
     username=models.CharField(max_length=100,null=True,blank=True)
@@ -29,7 +33,7 @@ class Order(models.Model):
 
 
 class Cart(models.Model):
-    user=models.ForeignKey('User.Users',on_delete=models.CASCADE,related_name='carts')
+    user=models.ForeignKey(Users,on_delete=models.CASCADE,related_name='carts')
     is_ordered = models.BooleanField(default=False)
     created_at=models.DateTimeField(auto_now_add=True)
 
@@ -43,7 +47,7 @@ class Cart(models.Model):
 
 class CartItem(models.Model):
     cart=models.ForeignKey(Cart,on_delete=models.CASCADE,related_name='items')
-    product=models.ForeignKey('product.Products',on_delete=models.CASCADE)
+    product=models.ForeignKey(Products,on_delete=models.CASCADE)
     quantity=models.PositiveIntegerField(default=1)
 
     def __str__(self):
@@ -54,8 +58,8 @@ class CartItem(models.Model):
         return price*self.quantity
 
 class Wishlis(models.Model):
-    user=models.ForeignKey('User.Users',on_delete=models.CASCADE,related_name='wishlis')
-    product=models.ForeignKey('product.Products',on_delete=models.CASCADE,related_name='wishlis')
+    user=models.ForeignKey(Users,on_delete=models.CASCADE,related_name='wishlis')
+    product=models.ForeignKey(Products,on_delete=models.CASCADE,related_name='wishlis')
 
 
 class OrderItem(models.Model):
@@ -65,7 +69,7 @@ class OrderItem(models.Model):
         related_name='items'
     )
     product = models.ForeignKey(
-        'product.Products',
+        Products,
         on_delete=models.SET_NULL,
         null=True
     )

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>Mening sevimlilarim</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">MY-BOZOR</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h3 class="mb-4"><i class="bi bi-heart-fill text-danger"></i> Saqlangan mahsulotlar</h3>
+
+        <div class="row row-cols-1 row-cols-md-4 g-4">
+            {% for item in wishlis %}
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0">
+                    <img src="{{ item.product.main_image.url }}" class="card-img-top" style="height: 180px; object-fit: cover;">
+                    <div class="card-body text-center">
+                        <h6 class="card-title text-truncate">{{ item.product.title }}</h6>
+                        <p class="text-primary fw-bold">{{ item.product.price }} so'm</p>
+
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'details' item.product.pk %}" class="btn btn-sm btn-outline-dark">Ko'rish</a>
+                            <a href="{% url 'wishles_toggle' item.product.pk %}" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i> O'chirish
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-heartbreak fs-1 text-muted"></i>
+                <p class="mt-3">Sevimlilar ro'yxati bo'sh.</p>
+                <a href="{% url 'home' %}" class="btn btn-primary">Xarid qilishni boshlash</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

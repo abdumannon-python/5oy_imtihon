@@ -1,6 +1,7 @@
 from django.db import models
 from decimal import Decimal
 
+from User.models import Users
 
 
 class Category(models.Model):
@@ -12,13 +13,13 @@ class Category(models.Model):
 
 
 class Products(models.Model):
-    user=models.ForeignKey('User.Users',on_delete=models.CASCADE,related_name='user')
+    user=models.ForeignKey(Users,on_delete=models.CASCADE,related_name='user')
     category=models.ForeignKey(Category,on_delete=models.CASCADE,related_name='product')
     title=models.CharField(max_length=50)
     brand=models.CharField(max_length=50)
     price=models.DecimalField(max_digits=10,decimal_places=2)
     discount_price=models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
-    present=models.IntegerField(null=True,blank=True)
+    present=models.IntegerField(null=True,blank=True,default=0)
     main_image=models.ImageField(upload_to='product_image',null=True,blank=True)
     stock=models.PositiveIntegerField()
     desc=models.TextField()

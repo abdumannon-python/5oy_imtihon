@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xabarlashish | My-Bozor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        .chat-container { height: 450px; overflow-y: auto; background: #fcfcfc; border: 1px solid #eee; padding: 20px; border-radius: 15px; }
+        .my-msg { background: #007bff; color: white; padding: 10px 15px; border-radius: 15px 15px 0 15px; margin-bottom: 15px; margin-left: auto; max-width: 75%; width: fit-content; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .their-msg { background: #ffffff; color: #333; padding: 10px 15px; border-radius: 15px 15px 15px 0; margin-bottom: 15px; max-width: 75%; width: fit-content; border: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .sender-name { font-size: 0.8rem; font-weight: bold; margin-bottom: 3px; display: block; }
+        .msg-time { font-size: 0.65rem; opacity: 0.7; display: block; margin-top: 5px; }
+        .msg-actions { font-size: 0.75rem; margin-top: 5px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 5px; }
+        .msg-actions a, .msg-actions button { color: rgba(255,255,255,0.8); text-decoration: none; margin-right: 10px; cursor: pointer; border: none; background: none; padding: 0; }
+        .msg-actions a:hover { color: white; }
+    </style>
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{% url 'home' %}">MY-BOZOR</a>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-light btn-sm">Dashboard</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-header bg-white py-3 fw-bold d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-chat-dots"></i> Xabarlar tarixi</span>
+                        <span id="editIndicator" class="badge bg-warning text-dark d-none">Tahrirlash rejimi</span>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="chat-container mb-4" id="chatBox">
+                            {% for msg in message %}
+                                {% if msg.sender == request.user %}
+                                    <div class="my-msg">
+                                        <span class="sender-name text-warning">Siz</span>
+                                        <div id="msgText-{{ msg.id }}">{{ msg.desc }}</div>
+                                        <span class="msg-time">{{ msg.created_at|date:"H:i" }}</span>
+
+                                        <div class="msg-actions">
+                                            <button onclick="editMessage('{{ msg.id }}', '{{ msg.receiver.id }}')" title="Tahrirlash">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <form action="{% url 'message_delete' msg.id %}" method="POST" style="display: inline;">
+                                                {% csrf_token %}
+                                                <button type="submit" onclick="return confirm('Xabarni o\'chirishni xohlaysizmi?')" title="O'chirish">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="their-msg">
+                                        <span class="sender-name text-primary">{{ msg.sender.username }}</span>
+                                        {{ msg.desc }}
+                                        <span class="msg-time">{{ msg.created_at|date:"H:i" }}</span>
+
+                                        <button class="btn btn-sm btn-link p-0 text-decoration-none"
+                                                onclick="fillID('{{ msg.sender.id }}')">
+                                            <i class="bi bi-reply"></i> Javob berish
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            {% empty %}
+                                <div class="text-center py-5 text-muted">Hozircha xabarlar yo'q.</div>
+                            {% endfor %}
+                        </div>
+
+                        <hr>
+
+                        <form method="POST" id="msgForm" action="{% url 'message_list' %}">
+                            {% csrf_token %}
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label small fw-bold">Kimga (Foydalanuvchi ID raqami):</label>
+                                    <input type="number" name="receiver_id" id="receiver_id_input"
+                                           class="form-control" value="{{ pre_receiver }}"
+                                           placeholder="ID raqamini kiriting" required>
+                                </div>
+                                <div class="col-12">
+                                    <textarea name="desc" id="message_text" class="form-control" rows="3"
+                                              placeholder="Xabaringizni yozing..." required></textarea>
+                                </div>
+                                <div class="col-12 d-flex gap-2">
+                                    <button type="submit" id="submitBtn" class="btn btn-primary flex-grow-1 py-2 shadow-sm">
+                                        <i class="bi bi-send-fill"></i> <span id="btnText">Xabarni yuborish</span>
+                                    </button>
+                                    <button type="button" id="cancelEdit" class="btn btn-secondary d-none" onclick="resetForm()">
+                                        Bekor qilish
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const msgForm = document.getElementById('msgForm');
+        const msgInput = document.getElementById('message_text');
+        const receiverInput = document.getElementById('receiver_id_input');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const cancelBtn = document.getElementById('cancelEdit');
+        const editIndicator = document.getElementById('editIndicator');
+        const defaultAction = "{% url 'message_list' %}";
+
+        // 1. Javob berish funksiyasi
+        function fillID(userId) {
+            resetForm();
+            receiverInput.value = userId;
+            msgInput.focus();
+            msgForm.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 2. Tahrirlash funksiyasi
+        function editMessage(msgId, receiverId) {
+            const currentText = document.getElementById(`msgText-${msgId}`).innerText;
+
+            // Formani tahrirlash rejimiga o'tkazish
+            msgInput.value = currentText;
+            receiverInput.value = receiverId;
+
+            // Formaning action manzilini EditView ga o'zgartirish
+            msgForm.action = `/reply/message/edit/${msgId}/`; // URL nomingizga qarab moslang
+
+            // Vizual o'zgarishlar
+            btnText.innerText = "O'zgarishni saqlash";
+            submitBtn.classList.replace('btn-primary', 'btn-warning');
+            cancelBtn.classList.remove('d-none');
+            editIndicator.classList.remove('d-none');
+
+            msgInput.focus();
+            msgForm.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 3. Formani qayta tiklash (Tahrirlashdan chiqish)
+        function resetForm() {
+            msgForm.action = defaultAction;
+            msgInput.value = "";
+            btnText.innerText = "Xabarni yuborish";
+            submitBtn.classList.replace('btn-warning', 'btn-primary');
+            cancelBtn.classList.add('d-none');
+            editIndicator.classList.add('d-none');
+        }
+
+        // 4. Avtomatik scroll
+        var chatContainer = document.getElementById("chatBox");
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    </script>
+
+</body>
+</html>

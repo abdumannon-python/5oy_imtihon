@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Shaxsiy kabinet</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{% url 'home' %}">MY-BOZOR</a>
+            <div class="ms-auto text-white">
+                <i class="bi bi-person-circle"></i> {{ user.username }}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body text-center">
+                        <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=random" class="rounded-circle mb-3" width="80">
+                        <h5 class="mb-0">{{ user.username }}</h5>
+                        <p class="text-muted small">{{ user.email }}</p>
+                        <hr>
+                        <a href="{% url 'userupdate' user.pk %}" class="btn btn-sm btn-outline-primary w-100 mb-2">Profilni tahrirlash</a>
+                        <a href="{% url 'product_create' %}" class="btn btn-sm btn-success w-100">Yangi e'lon qo'shish</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-9">
+                <ul class="nav nav-tabs mb-4" id="dashboardTab" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#products">Mening e'lonlarim</button>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'orderstatus' %}" class="nav-link text-primary fw-bold">
+                            <i class="bi bi-cart-check"></i> Kelgan buyurtmalar
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link position-relative" data-bs-toggle="tab" data-bs-target="#messages">
+                            Xabarlar
+                            {% if unread_messages.count > 0 %}
+                            <span class="badge bg-danger ms-1">{{ unread_messages.count }}</span>
+                            {% endif %}
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#comments">Sharhlarim</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+
+                    <div class="tab-pane fade show active" id="products">
+                        <div class="row row-cols-1 row-cols-md-2 g-3">
+                            {% for product in products %}
+                            <div class="col">
+                                <div class="card h-100 shadow-sm border-0">
+                                    {% if product.main_image %}
+                                        <img src="{{ product.main_image.url }}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                                    {% endif %}
+
+                                    <div class="card-body">
+                                        <h6 class="card-title text-truncate">{{ product.title }}</h6>
+                                        <p class="text-success fw-bold">{{ product.price }} so'm</p>
+
+                                        <div class="d-flex gap-2 mt-3">
+                                            <a href="{% url 'product_update' product.pk %}" class="btn btn-sm btn-outline-warning flex-grow-1">
+                                                <i class="bi bi-pencil"></i> Tahrirlash
+                                            </a>
+
+                                            <form action="{% url 'product_delete' product.pk %}" method="POST" class="flex-grow-1">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-danger w-100" onclick="return confirm('Ochirishga ishonchingiz komilmi?')">
+                                                    <i class="bi bi-trash"></i> O'chirish
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-center w-100 py-4">Sizda hali e'lonlar yo'q.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="messages">
+                        <div class="list-group shadow-sm">
+                            {% for msg in unread_messages %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-1 text-primary">Kimdan: {{ msg.sender.username }}</h6>
+                                    <small class="text-muted">{{ msg.created_at|date:"d.m.Y H:i" }}</small>
+                                </div>
+                                <p class="mb-2">{{ msg.content|truncatechars:100 }}</p>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'readm' msg.pk %}" class="btn btn-sm btn-light border">O'qish</a>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <p class="text-center py-4">Yangi xabarlar yo'q.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="comments">
+                        <div class="card shadow-sm border-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Mahsulot</th>
+                                            <th>Sizning sharhingiz</th>
+                                            <th>Amallar</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for comment in comments %}
+                                        <tr>
+                                            <td><small>{{ comment.product.title }}</small></td>
+                                            <td>{{ comment.desc|truncatechars:50 }}</td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="{% url 'reply_comment_page' comment.id %}" class="btn btn-sm btn-outline-primary" title="Javob berish">
+                                                        <i class="bi bi-reply"></i>
+                                                    </a>
+                                                    <a href="{% url 'comment_update' comment.id %}" class="btn btn-sm btn-outline-warning">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <a href="{% url 'comment_delete' comment.id %}" class="btn btn-sm btn-outline-danger">
+                                                        <i class="bi bi-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr><td colspan="3" class="text-center py-4">Siz hali sharh qoldirmagansiz.</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div> </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

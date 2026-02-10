@@ -3,6 +3,8 @@
 
 
 import random
+from django.utils import timezone
+
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate,login,logout
 from product.models import Products, Category
@@ -13,7 +15,7 @@ from django.conf import settings
 
 def send_otp(user):
     code=str(random.randint(100000,999999))
-    Emailcode.objects.update_or_create(users=user,defaults={'code':code})
+    Emailcode.objects.update_or_create(users=user,defaults={'code':code,'created_at':timezone.now()})
     try:
         send_mail(
             'Tasdiqlash kodi',
@@ -29,35 +31,36 @@ def send_otp(user):
 
 class RegisterView(View):
     def get(self,request):
-        return render(request,'auth/register.html')
+        return render(request,'register.html')
     def post(self,request):
         u=request.POST.get('username')
         e=request.POST.get('email')
         p=request.POST.get('password')
-        cp=request.POST.get('confirm_password')
-
+        cp=request.POST.get('password2')
+        print(u,e)
         if Users.objects.filter(username=u).exists():
-            return render(request,'auth/register.html', {'error': "bu username band"})
+            return render(request,'register.html', {'error': "bu username band"})
         if p!=cp:
-            return render(request,'auth/register.html',{'error':'parol mos emas'})
-
+            return render(request,'register.html',{'error':'parol mos emas'})
+        print(p,cp)
         user=Users.objects.create_user(
             username=u,
             email=e,
             password=p,
             is_active=False,
         )
+        print(11111,user)
         if send_otp(user):
             request.session['temp_user_id'] = user.id
             return redirect('verify_otp')
         else:
             user.delete()
-            return render(request, 'auth/register.html', {
+            return render(request, 'register.html', {
                 'error': "Email yuborish imkonsiz. Manzilni to'g'ri kiritganingizni tekshiring!"
             })
 class VerifyEmailView(View):
     def get(self, request):
-        return render(request, 'auth/verify_otp.html')
+        return render(request, 'verify_otp.html')
 
     def post(self, request):
         code = request.POST.get('code')
@@ -75,12 +78,12 @@ class VerifyEmailView(View):
                 email_obj.delete()
                 return redirect('login')
             else:
-                return render(request, 'auth/verify_otp.html', {'error': 'Kod vaqti o‘tgan!'})
+                return render(request, 'verify_otp.html', {'error': 'Kod vaqti o‘tgan!'})
         except Emailcode.DoesNotExist:
-            return render(request, 'auth/verify_otp.html', {'error': 'Noto‘g‘ri kod!'})
+            return render(request, 'verify_otp.html', {'error': 'Noto‘g‘ri kod!'})
 class LoginView(View):
     def get(self,request):
-        return render(request,'auth/login.html')
+        return render(request,'login.html')
 
     def post(self, request):
         username = request.POST['username']
@@ -91,7 +94,7 @@ class LoginView(View):
             login(request, user)
             return redirect('home')
         else:
-            return render(request, 'auth/login.html', {'error': 'Username yoki parol xato!'})
+            return render(request, 'login.html', {'error': 'Username yoki parol xato!'})
 class LogoutView(View):
     def get(self,request):
         logout(request)
@@ -109,7 +112,7 @@ class ResendOTPView(View):
                 return redirect('verify_otp')
             else:
                 user.delete()
-                return render(request, 'auth/verify_otp.html', {'error': 'Email yuborishda xato!'})
+                return render(request, 'verify_otp.html', {'error': 'Email yuborishda xato!'})
         except Users.DoesNotExist:
             return redirect('register')
 
@@ -145,7 +148,6 @@ class UserUdateView(View):
         confirm_password=request.POST.get('confirm_password')
         address=request.POST.get('address')
         email=request.POST.get('email')
-
         if email and Users.objects.filter(email=email).exclude(id=user.id).exists():
             return render(request,'profil.html',{'erorr':'Bu email mavjud'})
         if password!=confirm_password:

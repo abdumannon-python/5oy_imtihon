@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>Xabarni tahrirlash</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 card shadow-sm p-4">
+                <h4 class="mb-4">Xabarni tahrirlash</h4>
+
+                <div class="alert alert-info py-2">
+                    <small>Kimga: <strong>{{ message.receiver.username }}</strong></small>
+                </div>
+
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Xabar matni</label>
+                        <textarea name="content" class="form-control" rows="5" required>{{ message.content }}</textarea>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-warning text-dark fw-bold">O'zgarishlarni saqlash</button>
+                        <a href="{% url 'dashboard' %}" class="btn btn-light">Orqaga</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

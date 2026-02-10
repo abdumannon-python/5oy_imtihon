@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mening buyurtmalarim | My-Bozor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-dark bg-dark mb-4 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{% url 'home' %}">MY-BOZOR</a>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-light btn-sm">Dashboardga qaytish</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h3 class="mb-4 fw-bold text-dark"><i class="bi bi-bag-heart"></i> Buyurtmalar tarixi</h3>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light text-secondary small text-uppercase">
+                        <tr>
+                            <th class="ps-4 py-3">ID</th>
+                            <th class="py-3">Mahsulot</th>
+                            <th class="py-3">Soni</th>
+                            <th class="py-3 text-center">Umumiy narx</th>
+                            <th class="py-3 text-center">Buyurtma holati</th>
+                            <th class="text-end pe-4 py-3">Amal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order_item %}
+                        <tr>
+                            <td class="ps-4">
+                                <span class="text-muted fw-medium">#ORD-{{ item.order.id }}</span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if item.product.main_image %}
+                                        <img src="{{ item.product.main_image.url }}" class="rounded shadow-sm me-3" style="width: 45px; height: 45px; object-fit: cover;">
+                                    {% endif %}
+                                    <span class="fw-bold text-dark">{{ item.product.title }}</span>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-light text-dark border">{{ item.quantity }} ta</span></td>
+                            <td class="text-center fw-bold text-primary">{{ item.price }} so'm</td>
+
+                            <td class="text-center">
+                                {% if item.order.status == 'pending' %}
+                                    <span class="badge bg-warning text-dark px-3 py-2"><i class="bi bi-clock"></i> Kutilmoqda</span>
+                                {% elif item.order.status == 'processing' %}
+                                    <span class="badge bg-info text-dark px-3 py-2"><i class="bi bi-gear-fill"></i> Jarayonda</span>
+                                {% elif item.order.status == 'shipped' %}
+                                    <span class="badge bg-primary px-3 py-2"><i class="bi bi-truck"></i> Yo‘lda</span>
+                                {% elif item.order.status == 'delivered' %}
+                                    <span class="badge bg-success px-3 py-2"><i class="bi bi-check-circle-fill"></i> Yetkazib berildi</span>
+                                {% elif item.order.status == 'cancelled' %}
+                                    <span class="badge bg-danger px-3 py-2"><i class="bi bi-x-circle-fill"></i> Bekor qilindi</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-end pe-4">
+                                {% if item.order.status == 'pending' %}
+                                    <form action="{% url 'orderuser' %}" method="POST" style="display:inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="order_item_id" value="{{ item.order.id }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 shadow-sm"
+                                                onclick="return confirm('Haqiqatan ham ushbu buyurtmani bekor qilmoqchimisiz?')">
+                                            Bekor qilish
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <span class="text-muted small italic">Tahrirlab bo'lmaydi</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <i class="bi bi-cart-x fs-1 text-muted"></i>
+                                <p class="mt-2 text-muted">Sizda hali buyurtmalar mavjud emas.</p>
+                                <a href="{% url 'home' %}" class="btn btn-primary mt-2 shadow-sm">Xaridni boshlash</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-4 p-3 bg-white border rounded-3 shadow-sm">
+            <h6 class="fw-bold mb-2"><i class="bi bi-info-circle"></i> Ma'lumot:</h6>
+            <ul class="small text-muted mb-0">
+                <li>Buyurtma <b>Kutilmoqda</b> holatida bo'lgandagina bekor qila olasiz.</li>
+                <li>Sotuvchi buyurtmani qabul qilgandan so'ng (Jarayonda), uni bekor qilish uchun sotuvchi bilan bog'laning.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
